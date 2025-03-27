@@ -1,47 +1,67 @@
-import bcrypt from 'bcrypt';
-import User from '../models/user.js'; // Assuming you have a User model
+const express = require('express');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const UserModel = require('../models/user');
 
-export async function registerUser(req, res) {
-    const { username, password, email } = req.body;
-
+// Register a new user
+const registerUser = async (req, res, next) => {
     try {
-        // Check if user already exists
-        const userExists = await User.findOne({ username });
-        if (userExists) {
+        const { name, email, password } = req.body;
+
+        // Check if the user already exists
+        const existingUser = await UserModel.findOne({ email });
+        if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
 
         // Hash the password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Save user to the database
-        const newUser = new User({ username, password: hashedPassword, email });
-        await newUser.save();
+        // Create a new user instance
+        const newUser = new UserModel({
+            name,
+            email,
+            password: hashedPassword, // Save hashed password
+        });
 
-        res.status(201).json({ message: 'User created successfully' });
+        // Save the user to the database
+        const savedUser = await newUser.save();
+
+        res.status(201).json({ message: 'Registration successful', user: savedUser });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        next(error);
     }
-}
+};
 
-export async function loginUser(req, res) {
-    const { username, password } = req.body;
-
+// Login a user
+const loginUser = async (req, res, next) => {
     try {
-        // Find user in the database
-        const user = await User.findOne({ username });
+        const { email, password } = req.body;
+
+        // Check if the user exists
+        const user = await UserModel.findOne({ email });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid username or password' });
+            return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        // Compare the password
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid username or password' });
+        // Compare the hashed password
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: 'Invalid email or password' });
         }
 
-        res.status(200).json({ message: 'Sign-in successful' });
+        // Generate a JWT token
+        const token = jwt.sign(
+            { id: user._id, email: user.email },
+            process.env.JWT_SECRET, // Use a strong secret stored in .env
+            { expiresIn: '1h' } // Token expiration time
+        );
+        const safeUser = user.toObject();
+        delete safeUser.password;
+        res.status(200).json({ message: 'Login successful', token, user:safeUser });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+        next(error);
     }
-}
+};
+
+module.exports = { registerUser, loginUser };

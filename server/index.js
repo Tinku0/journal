@@ -1,26 +1,18 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
-require('dotenv').config();
-const configDotenv = require('dotenv').config;
+const { connectToDB } = require('./db/connectToDatabase');
 const userRoutes = require('./routes/user');
-import connectToDB from './db/connectToDatabase';
-configDotenv();
+require('dotenv').config();
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+app.use(cors())
+
+
 const PORT = process.env.PORT || 5000;
 
-// app.use(bodyParser.json());
-
-app.get('/', (req, res) => {
-  res.send('Hello World');
+app.listen(PORT, () => {
+    console.log("server is running on - ", PORT);
+    connectToDB();
 });
-
-app.use('/auth', userRoutes);
-
-app.listen(PORT, async () => {    
-  console.log(`Server is running on port ${PORT}`);
-  await connectToDB();
-});
+app.use(express.json())
+app.use('/auth', userRoutes)

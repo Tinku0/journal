@@ -5,7 +5,7 @@ import axios from 'axios';
 const SignupPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [username, setUsername] = useState('');
+  const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -18,7 +18,7 @@ const SignupPage = () => {
     }
     try {
       const response = await axios.post('http://localhost:3000/auth/signup', {
-        username,
+        name,
         email,
         password,
       });
@@ -38,12 +38,12 @@ const SignupPage = () => {
         {success && <p className="text-green-500 mb-4">{success}</p>}
         <form onSubmit={handleSubmit}>
         <div className="mb-4">
-            <label className="block text-gray-700">Username</label>
+            <label className="block text-gray-700">name</label>
             <input
               type="text"
               className="w-full p-2 border border-gray-300 rounded mt-1"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               required
             />
           </div>
