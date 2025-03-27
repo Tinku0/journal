@@ -14,5 +14,10 @@ app.listen(PORT, () => {
     console.log("server is running on - ", PORT);
     connectToDB();
 });
+
+app.get('/', (req, res) => {
+    res.send('Hello World');
+})
+
 app.use(express.json())
 app.use('/auth', userRoutes)
