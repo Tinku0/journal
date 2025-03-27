@@ -4,8 +4,7 @@ const bodyParser = require('body-parser');
 require('dotenv').config();
 const configDotenv = require('dotenv').config;
 const userRoutes = require('./routes/user');
-const { default: connectToDB } = require('./db/connectToDatabase');
-
+import connectToDB from './db/connectToDatabase';
 configDotenv();
 
 const app = express();
