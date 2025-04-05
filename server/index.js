@@ -1,23 +1,25 @@
+// index.js
 const express = require('express');
 const cors = require('cors');
 const { connectToDB } = require('./db/connectToDatabase');
 const userRoutes = require('./routes/user');
-require('dotenv').config();
 
 const app = express();
-app.use(cors())
-
-
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    console.log("server is running on - ", PORT);
-    connectToDB();
-});
+app.use(cors());
+app.use(express.json());
+app.use('/auth', userRoutes);
 
 app.get('/', (req, res) => {
-    res.send('Hello World');
-})
+  res.send('Hello World from API!');
+});
 
-app.use(express.json())
-app.use('/auth', userRoutes)
+let isConnected = false;
+
+module.exports = async (req, res) => {
+  if (!isConnected) {
+    await connectToDB(); // Connect once
+    isConnected = true;
+    console.log("Connected to DB on Vercel.");
+  }
+  app(req, res); // Delegate request to Express
+};
