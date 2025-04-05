@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const { connectToDB } = require('./db/connectToDatabase');
 const userRoutes = require('./routes/user');
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
@@ -23,3 +24,13 @@ module.exports = async (req, res) => {
   }
   app(req, res); // Delegate request to Express
 };
+
+// 🖥️ Localhost Mode
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+
+  app.listen(PORT, async () => {
+    console.log(`Server is running on port ${PORT}`);
+    await connectToDB(); // Connect to DB on localhost
+  });
+}
